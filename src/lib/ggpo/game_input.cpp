@@ -41,20 +41,37 @@ GameInput::desc(char *buf, size_t buf_size, bool show_frame) const
    ASSERT(size);
    size_t remaining = buf_size;
    if (show_frame) {
-      remaining -= sprintf_s(buf, buf_size, "(frame:%d size:%d ", frame, size);
+      #if defined(_WINDOWS)
+      remaining -= snprintf(buf, buf_size, "(frame:%d size:%d ", frame, size);
+      #else
+      remaining -= sprintf(buf, "(frame:%d size:%d \0", frame, size);
+      #endif
    } else {
-      remaining -= sprintf_s(buf, buf_size, "(size:%d ", size);
+      #if defined(_WINDOWS)
+      remaining -= snprintf(buf, buf_size, "(size:%d ", size);
+      #else
+      remaining -= sprintf(buf, "(size:%d \0", size);
+      #endif
    }
 
    for (int i = 0; i < size * 8; i++) {
       char buf2[16];
       if (value(i)) {
-         int c = sprintf_s(buf2, ARRAY_SIZE(buf2), "%2d ", i);
+         #if defined(_WINDOWS)
+         int c = snprintf(buf2, ARRAY_SIZE(buf2), "%2d ", i);
          strncat_s(buf, remaining, buf2, ARRAY_SIZE(buf2));
+         #else
+         int c = sprintf(buf2, "%2d \0", i);
+         strncat(buf, buf2, ARRAY_SIZE(buf2));
+         #endif
          remaining -= c;
       }
    }
+   #if defined(_WINDOWS)
    strncat_s(buf, remaining, ")", 1);
+   #else
+   strncat(buf, ")", 1);
+   #endif
 }
 
 void
@@ -62,9 +79,15 @@ GameInput::log(char *prefix, bool show_frame) const
 {
 	char buf[1024];
    size_t c = strlen(prefix);
+   #if defined(_WINDOWS)
 	strcpy_s(buf, prefix);
 	desc(buf + c, ARRAY_SIZE(buf) - c, show_frame);
    strncat_s(buf, ARRAY_SIZE(buf) - strlen(buf), "\n", 1);
+   #else
+   strcpy(buf, prefix);
+	desc(buf + c, ARRAY_SIZE(buf) - c, show_frame);
+   strncat(buf, "\n", 1);
+   #endif
 	Log(buf);
 }
 

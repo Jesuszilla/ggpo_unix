@@ -71,7 +71,7 @@ void
 GDIRenderer::RenderChecksum(HDC hdc, int y, NonGameState::ChecksumInfo &info)
 {
    char checksum[128];
-   sprintf_s(checksum, ARRAYSIZE(checksum), "Frame: %04d  Checksum: %08x", info.framenumber, info.checksum);
+   snprintf(checksum, ARRAYSIZE(checksum), "Frame: %04d  Checksum: %08x", info.framenumber, info.checksum);
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + y, checksum, (int)strlen(checksum));
 }
 
@@ -135,7 +135,7 @@ GDIRenderer::DrawShip(HDC hdc, int which, GameState &gs)
       }
    }
    SetTextAlign(hdc, alignments[which]);
-   sprintf_s(buf, ARRAYSIZE(buf), "Hits: %d", ship->score);
+   snprintf(buf, ARRAYSIZE(buf), "Hits: %d", ship->score);
    TextOutA(hdc, text_offsets[which].x, text_offsets[which].y, buf, (int)strlen(buf));
 }
 
@@ -154,20 +154,20 @@ GDIRenderer::DrawConnectState(HDC hdc, Ship &ship, PlayerConnectionInfo &info)
    *status = '\0';
    switch (info.state) {
       case Connecting:
-         sprintf_s(status, ARRAYSIZE(status), (info.type == GGPO_PLAYERTYPE_LOCAL) ? "Local Player" : "Connecting...");
+         snprintf(status, ARRAYSIZE(status), (info.type == GGPO_PLAYERTYPE_LOCAL) ? "Local Player" : "Connecting...");
          break;
 
       case Synchronizing:
          progress = info.connect_progress;
-         sprintf_s(status, ARRAYSIZE(status), (info.type == GGPO_PLAYERTYPE_LOCAL) ? "Local Player" : "Synchronizing...");
+         snprintf(status, ARRAYSIZE(status), (info.type == GGPO_PLAYERTYPE_LOCAL) ? "Local Player" : "Synchronizing...");
          break;
 
       case Disconnected:
-         sprintf_s(status, ARRAYSIZE(status), "Disconnected");
+         snprintf(status, ARRAYSIZE(status), "Disconnected");
          break;
 
       case Disconnecting:
-         sprintf_s(status, ARRAYSIZE(status), "Waiting for player...");
+         snprintf(status, ARRAYSIZE(status), "Waiting for player...");
          progress = (timeGetTime() - info.disconnect_start) * 100 / info.disconnect_timeout;
          break;
    }

@@ -7,17 +7,47 @@
 
 #include "platform_linux.h"
 
-struct timespec start = { 0 }
+struct timespec Platform::start = { 0L };
 
-uint32 Platform::GetCurrentTimeMS() {
+uint32_t
+Platform::GetCurrentTimeMS() {
     if (start.tv_sec == 0 && start.tv_nsec == 0) {
         clock_gettime(CLOCK_MONOTONIC, &start);
-        return 0
+        return 0;
     }
     struct timespec current;
     clock_gettime(CLOCK_MONOTONIC, &current);
 
     return ((current.tv_sec - start.tv_sec) * 1000) +
-           ((current.tv_nsec  - start.tv_nsec ) / 1000000) +
+           ((current.tv_nsec  - start.tv_nsec ) / 1000000);
 }
 
+int
+Platform::GetConfigInt(const char* name)
+{
+   char buf[1024];
+   char *env = getenv(name);
+   if (env == NULL) {
+      return 0;
+   }
+   strcpy(buf, env);
+   int res = atoi(buf);
+   free(buf);
+   return res;
+}
+
+bool Platform::GetConfigBool(const char* name)
+{
+   char buf[1024];
+   char *env = getenv(name);
+   if (env == NULL) {
+      return false;
+   }
+   strcpy(buf, env);
+   int res = atoi(buf);
+   bool res2 = false;
+   if (env != NULL)
+      res2 = strcasecmp(buf, "true") == 0;
+   free(buf);
+   return res != 0 || res2;
+}

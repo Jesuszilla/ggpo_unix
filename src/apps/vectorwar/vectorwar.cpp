@@ -303,9 +303,9 @@ VectorWar_DisconnectPlayer(int player)
       char logbuf[128];
       GGPOErrorCode result = ggpo_disconnect_player(ggpo, ngs.players[player].handle);
       if (GGPO_SUCCEEDED(result)) {
-         sprintf_s(logbuf, ARRAYSIZE(logbuf), "Disconnected player %d.\n", player);
+         snprintf(logbuf, ARRAYSIZE(logbuf), "Disconnected player %d.\n", player);
       } else {
-         sprintf_s(logbuf, ARRAYSIZE(logbuf), "Error while disconnecting player (err:%d).\n", result);
+         snprintf(logbuf, ARRAYSIZE(logbuf), "Error while disconnecting player (err:%d).\n", result);
       }
       renderer->SetStatusText(logbuf);
    }

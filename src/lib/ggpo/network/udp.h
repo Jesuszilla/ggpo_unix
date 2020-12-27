@@ -13,6 +13,13 @@
 #include "ggponet.h"
 #include "ring_buffer.h"
 
+#if !defined(_WINDOWS)
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#define WAIT_OBJECT_0 0x00000000L
+#endif
+
 #define MAX_UDP_ENDPOINTS     16
 
 static const int MAX_UDP_PACKET_SIZE = 4096;
@@ -49,7 +56,11 @@ public:
 
 protected:
    // Network transmission information
+   #if defined(_WINDOWS)
    SOCKET         _socket;
+   #else
+   int            _socket;
+   #endif
 
    // state management
    Callbacks      *_callbacks;

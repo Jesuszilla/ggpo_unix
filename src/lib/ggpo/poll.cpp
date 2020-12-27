@@ -7,7 +7,13 @@
 
 #include "types.h"
 #include "poll.h"
+#if !defined(_WINDOWS)
+#include "../../pevents/src/pevents.h"
+#define INFINITE      ~0
+#define WAIT_OBJECT_0 0x00000000L
+#endif
 
+#if defined(_WINDOWS)
 Poll::Poll(void) :
    _handle_count(0),
    _start_time(0)
@@ -17,7 +23,6 @@ Poll::Poll(void) :
     */
    _handles[_handle_count++] = CreateEvent(NULL, true, false, NULL);
 }
-
 void
 Poll::RegisterHandle(IPollSink *sink, HANDLE h, void *cookie)
 {
@@ -27,6 +32,27 @@ Poll::RegisterHandle(IPollSink *sink, HANDLE h, void *cookie)
    _handle_sinks[_handle_count] = PollSinkCb(sink, cookie);
    _handle_count++;
 }
+#else
+Poll::Poll(void) :
+   _handle_count(0),
+   _start_time(0)
+{
+   /*
+    * Create a dummy handle to simplify things.
+    */
+   _handles[_handle_count++] = neosmart::CreateEvent(true, false);
+}
+
+void
+Poll::RegisterHandle(IPollSink *sink, neosmart::neosmart_event_t h, void *cookie)
+{
+   ASSERT(_handle_count < MAX_POLLABLE_HANDLES - 1);
+
+   _handles[_handle_count] = h;
+   _handle_sinks[_handle_count] = PollSinkCb(sink, cookie);
+   _handle_count++;
+}
+#endif
 
 void
 Poll::RegisterMsgLoop(IPollSink *sink, void *cookie)
@@ -53,6 +79,7 @@ Poll::Run()
    }
 }
 
+#if defined(_WINDOWS)
 bool
 Poll::Pump(int timeout)
 {
@@ -110,3 +137,62 @@ Poll::ComputeWaitTime(int elapsed)
    }
    return waitTime;
 }
+#else
+bool
+Poll::Pump(int timeout)
+{
+   int i, res;
+   bool finished = false;
+
+   if (_start_time == 0) {
+      _start_time = Platform::GetCurrentTimeMS();
+   }
+   int elapsed = Platform::GetCurrentTimeMS() - _start_time;
+   int maxwait = ComputeWaitTime(elapsed);
+   if (maxwait != INFINITE) {
+      timeout = MIN(timeout, maxwait);
+   }
+
+   res = neosmart::WaitForMultipleEvents(_handles, _handle_count, false, timeout);
+   if (res >= WAIT_OBJECT_0 && res < WAIT_OBJECT_0 + _handle_count) {
+      i = res - WAIT_OBJECT_0;
+      finished = !_handle_sinks[i].sink->OnHandlePoll(_handle_sinks[i].cookie) || finished;
+   }
+   for (i = 0; i < _msg_sinks.size(); i++) {
+      PollSinkCb &cb = _msg_sinks[i];
+      finished = !cb.sink->OnMsgPoll(cb.cookie) || finished;
+   }
+
+   for (i = 0; i < _periodic_sinks.size(); i++) {
+      PollPeriodicSinkCb &cb = _periodic_sinks[i];
+      if (cb.interval + cb.last_fired <= elapsed) {
+         cb.last_fired = (elapsed / cb.interval) * cb.interval;
+         finished = !cb.sink->OnPeriodicPoll(cb.cookie, cb.last_fired) || finished;
+      }
+   }
+
+   for (i = 0; i < _loop_sinks.size(); i++) {
+      PollSinkCb &cb = _loop_sinks[i];
+      finished = !cb.sink->OnLoopPoll(cb.cookie) || finished;
+   }
+   return finished;
+}
+
+int
+Poll::ComputeWaitTime(int elapsed)
+{
+   int waitTime = INFINITE;
+   size_t count = _periodic_sinks.size();
+
+   if (count > 0) {
+      for (int i = 0; i < count; i++) {
+         PollPeriodicSinkCb &cb = _periodic_sinks[i];
+         int timeout = (cb.interval + cb.last_fired) - elapsed;
+         if (waitTime == INFINITE || (timeout < waitTime)) {
+            waitTime = MAX(timeout, 0);
+         }         
+      }
+   }
+   return waitTime;
+}
+#endif

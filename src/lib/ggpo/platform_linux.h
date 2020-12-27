@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 class Platform {
 public:  // types
@@ -21,7 +23,11 @@ public:  // types
 public:  // functions
    static ProcessID GetProcessID() { return getpid(); }
    static void AssertFailed(char *msg) { }
-   static uint32 GetCurrentTimeMS();
+   static uint32_t GetCurrentTimeMS();
+   static int GetConfigInt(const char* name);
+   static bool GetConfigBool(const char* name);
+private:
+   static struct timespec start;
 };
 
 #endif

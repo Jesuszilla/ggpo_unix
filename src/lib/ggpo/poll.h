@@ -10,6 +10,10 @@
 
 #include "static_buffer.h"
 
+#if !defined(_WINDOWS)
+#include "../../pevents/src/pevents.h"
+#endif
+
 #define MAX_POLLABLE_HANDLES     64
 
 
@@ -25,7 +29,11 @@ public:
 class Poll {
 public:
    Poll(void);
+   #if defined(_WINDOWS)
    void RegisterHandle(IPollSink *sink, HANDLE h, void *cookie = NULL);
+   #else
+   void RegisterHandle(IPollSink *sink, neosmart::neosmart_event_t h, void *cookie = NULL);
+   #endif
    void RegisterMsgLoop(IPollSink *sink, void *cookie = NULL);
    void RegisterPeriodic(IPollSink *sink, int interval, void *cookie = NULL);
    void RegisterLoop(IPollSink *sink, void *cookie = NULL);
@@ -51,10 +59,14 @@ protected:
          PollSinkCb(s, c), interval(i), last_fired(0) { }
    };
 
-   int               _start_time;
-   int               _handle_count;
-   HANDLE            _handles[MAX_POLLABLE_HANDLES];
-   PollSinkCb        _handle_sinks[MAX_POLLABLE_HANDLES];
+   int                        _start_time;
+   int                        _handle_count;
+   #if defined(_WINDOWS)
+   HANDLE                     _handles[MAX_POLLABLE_HANDLES];
+   #else
+   neosmart::neosmart_event_t _handles[MAX_POLLABLE_HANDLES];
+   #endif
+   PollSinkCb                 _handle_sinks[MAX_POLLABLE_HANDLES];
 
    StaticBuffer<PollSinkCb, 16>          _msg_sinks;
    StaticBuffer<PollSinkCb, 16>          _loop_sinks;

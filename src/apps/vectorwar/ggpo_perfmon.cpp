@@ -219,11 +219,11 @@ ggpoutil_perfmon_update(GGPOSession *ggpo, GGPOPlayerHandle players[], int num_p
          char fLocal[128], fRemote[128], fBandwidth[128];
          char msLag[128], frameLag[128];
  
-         sprintf_s(msLag, ARRAYSIZE(msLag), "%d ms", stats.network.ping);
-         sprintf_s(frameLag, ARRAYSIZE(frameLag), "%.1f frames", stats.network.ping ? stats.network.ping * 60.0 / 1000 : 0);
-         sprintf_s(fBandwidth, ARRAYSIZE(fBandwidth), "%.2f kilobytes/sec", stats.network.kbps_sent / 8.0);
-         sprintf_s(fLocal, ARRAYSIZE(fLocal), "%d frames", stats.timesync.local_frames_behind);
-         sprintf_s(fRemote, ARRAYSIZE(fRemote), "%d frames", stats.timesync.remote_frames_behind);
+         snprintf(msLag, ARRAYSIZE(msLag), "%d ms", stats.network.ping);
+         snprintf(frameLag, ARRAYSIZE(frameLag), "%.1f frames", stats.network.ping ? stats.network.ping * 60.0 / 1000 : 0);
+         snprintf(fBandwidth, ARRAYSIZE(fBandwidth), "%.2f kilobytes/sec", stats.network.kbps_sent / 8.0);
+         snprintf(fLocal, ARRAYSIZE(fLocal), "%d frames", stats.timesync.local_frames_behind);
+         snprintf(fRemote, ARRAYSIZE(fRemote), "%d frames", stats.timesync.remote_frames_behind);
          SetWindowTextA(GetDlgItem(_dialog, IDC_NETWORK_LAG), msLag);
          SetWindowTextA(GetDlgItem(_dialog, IDC_FRAME_LAG), frameLag);
          SetWindowTextA(GetDlgItem(_dialog, IDC_BANDWIDTH), fBandwidth);

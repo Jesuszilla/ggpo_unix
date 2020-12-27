@@ -24,9 +24,14 @@ set(GGPO_LIB_SRC_NOFILTER
 )
 
 if(UNIX)
+	set(GGPO_LIB_INC_NOFILTER
+		${GGPO_LIB_INC_NOFILTER}
+		"pevents/src/pevents.h"
+	)
 	set(GGPO_LIB_SRC_NOFILTER
 		${GGPO_LIB_SRC_NOFILTER}
 		"lib/ggpo/platform_linux.cpp"
+		"pevents/src/pevents.cpp"
 	)
 endif()
 

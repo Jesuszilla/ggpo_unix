@@ -8,6 +8,12 @@
 #ifndef _UDP_PROTO_H_
 #define _UDP_PROTO_H_
 
+#if !defined(_WINDOWS)
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
+
 #include "poll.h"
 #include "udp.h"
 #include "udp_msg.h"
@@ -53,7 +59,7 @@ public:
          } network_interrupted;
       } u;
 
-      UdpProtocol::Event(Type t = Unknown) : type(t) { }
+      Event(Type t = Unknown) : type(t) { }
    };
 
 public:
@@ -128,9 +134,9 @@ protected:
     */
    Udp            *_udp;
    sockaddr_in    _peer_addr; 
-   uint16         _magic_number;
+   uint16_t       _magic_number;
    int            _queue;
-   uint16         _remote_magic_number;
+   uint16_t       _remote_magic_number;
    bool           _connected;
    int            _send_latency;
    int            _oop_percent;
@@ -159,13 +165,13 @@ protected:
    State          _current_state;
    union {
       struct {
-         uint32   roundtrips_remaining;
-         uint32   random;
+         uint32_t   roundtrips_remaining;
+         uint32_t   random;
       } sync;
       struct {
-         uint32   last_quality_report_time;
-         uint32   last_network_stats_interval;
-         uint32   last_input_packet_recv_time;
+         uint32_t   last_quality_report_time;
+         uint32_t   last_network_stats_interval;
+         uint32_t   last_input_packet_recv_time;
       } running;
    } _state;
 
@@ -190,8 +196,8 @@ protected:
    unsigned int               _disconnect_notify_start;
    bool                       _disconnect_notify_sent;
 
-   uint16                     _next_send_seq;
-   uint16                     _next_recv_seq;
+   uint16_t                     _next_send_seq;
+   uint16_t                     _next_recv_seq;
 
    /*
     * Rift synchronization.

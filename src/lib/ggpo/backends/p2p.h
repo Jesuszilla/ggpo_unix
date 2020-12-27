@@ -14,6 +14,10 @@
 #include "backend.h"
 #include "timesync.h"
 #include "network/udp_proto.h"
+#if !defined(_WINDOWS)
+#include <climits>
+#include <unistd.h>
+#endif
 
 class Peer2PeerBackend : public IQuarkBackend, IPollSink, Udp::Callbacks {
 public:
