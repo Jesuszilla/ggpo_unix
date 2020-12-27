@@ -161,7 +161,11 @@ Peer2PeerBackend::DoPoll(int timeout)
          }
          // XXX: this is obviously a farce...
          if (timeout) {
+            #if defined(_WINDOWS)
+            Sleep(1);
+            #else
             usleep(1000);
+            #endif
          }
       }
    }
